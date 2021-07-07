@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 //database
 const database = require("./database/index");
 //Models
-const BookModels = require("./database/book");
+const BookModel = require("./database/book");
 const AuthorModel = require("./database/author");
 const PublicationModel = require("./database/publication");
 
@@ -42,8 +42,11 @@ Parameters       NONE
 Method           GET 
 */
 
-shapeAI.get("/",(req,res)=>{
-    return res.json({books : database.books});
+shapeAI.get("/",async (req,res)=>{
+
+  const getAllBooks = await BookModel.find(); // nocondition prvided becoz we need all books
+   
+    return res.json({getAllBooks});
 });
 
 
@@ -56,12 +59,17 @@ Parameters       isbn
 Method           GET 
 */
 
-shapeAI.get("/is/:isbn",(req,res)=>{
-    const getSpecificBook=database.books.filter(
-        (book)=>book.ISBN===req.params.isbn
-    );
+shapeAI.get("/is/:isbn",async (req,res)=>{
 
-    if(getSpecificBook.length===0){
+  const getSpecificBook = await BookModel.findOne({ISBN: req.params.isbn}); 
+   
+    // const getSpecificBook=database.books.filter(
+    //     (book)=>book.ISBN===req.params.isbn
+    // );
+    
+
+    //if mongodb didnt find any data it gives null =>false=>error msg displayed
+    if(!getSpecificBook){
       return res.json({
         error :`No book found for the ISBN of ${req.params.isbn}`,
       });  
@@ -78,12 +86,14 @@ Parameters       category
 Method           GET 
 */
 
-shapeAI.get("/c/:category",(req,res)=>{
-  const getSpecificBooks=database.books.filter(
-    (book)=>book.category.includes(req.params.category)
-  );
+shapeAI.get("/c/:category",async (req,res)=>{
 
- if(getSpecificBooks.length===0){
+  const getSpecificBooks = await BookModel.findOne({category : req.params.category});//even though categry is an array , this works
+  // const getSpecificBooks=database.books.filter(
+  //   (book)=>book.category.includes(req.params.category)
+  // );
+
+ if(!getSpecificBooks){
    return res.json({
     error :`No book found for the category of ${req.params.category}`
    });  
@@ -94,17 +104,19 @@ shapeAI.get("/c/:category",(req,res)=>{
 
 /* API 
 route            /ba
-description      get specific books based on category
+description      get specific books based on authors
 Access           PUBLIC
 Parameters       authors
 Method           GET 
 */
- shapeAI.get("/ba/:authors",(req,res)=>{
-  const getSpecificAuthorBooks=database.books.filter(
-    (book)=>book.authors.includes(parseInt(req.params.authors)),
-);
+ shapeAI.get("/ba/:authors", async(req,res)=>{
 
-if(getSpecificAuthorBooks.length===0){
+const getSpecificAuthorBooks = await BookModel.findOne({authors: req.params.authors});
+//   const getSpecificAuthorBooks=database.books.filter(
+//     (book)=>book.authors.includes(parseInt(req.params.authors)),
+// );
+
+if(!getSpecificAuthorBooks){
   return res.json({
     error :`No book found for  ${req.params.authors}`,
   });  
@@ -122,8 +134,10 @@ Parameters       NONE
 Method           GET 
  */
 
-shapeAI.get("/author",(req,res)=>{
-  return res.json({authors:database.authors});
+shapeAI.get("/author", async(req,res)=>{
+
+  const getAllAuthors= await AuthorModel.find();
+  return res.json({authors:getAllAuthors});
 });
 
 
@@ -134,13 +148,14 @@ Access           PUBLIC
 Parameters       id
 Method           GET 
 //  */
-shapeAI.get("/author/:id",(req,res)=>{
- const getSpecificAuthor=database.authors.filter(
-   (author)=>author.id===parseInt(req.params.id)
- );
- if(getSpecificAuthor.length===0){
+shapeAI.get("/author/:id", async(req,res)=>{
+  const getSpecificAuthor = await AuthorModel.findOne({id:req.params.id});
+//  const getSpecificAuthor=database.authors.filter(
+//    (author)=>author.id===parseInt(req.params.id)
+//  );
+ if(!getSpecificAuthor){
   return res.json({
-    error :`No author found for the name of ${req.params.id}`
+    error :`No author found for the id  of ${req.params.id}`
   });  
  }
  return res.json({authors:getSpecificAuthor});
@@ -154,14 +169,16 @@ Access           PUBLIC
 Parameters       isbn of book
 Method           GET 
  */
-shapeAI.get("/a/:isbn",(req,res)=>{
-   const getSpecificAuthors = database.authors.filter(
-      (author)=>author.books.includes(req.params.isbn)
-    );
+shapeAI.get("/a/:isbn",async(req,res)=>{
+
+  const  getSpecificAuthors = await AuthorModel.findOne({books:req.params.isbn});
+  //  const getSpecificAuthors = database.authors.filter(
+  //     (author)=>author.books.includes(req.params.isbn)
+  //   );
   
- if(getSpecificAuthors.length===0){
+ if(!getSpecificAuthors){
   return res.json({
-    error :`No author found for the isbn of ${req.params.id}`
+    error :`No author found for the isbn of ${req.params.isbn}`
   });
  }
   return  res.json({authors:getSpecificAuthors});
@@ -175,7 +192,9 @@ Access           PUBLIC
 Parameters       NONE
 Method           GET 
  */
-shapeAI.get("/publications",(req,res)=>{
+shapeAI.get("/publications",async(req,res)=>{
+
+  const getAllPublications = await PublicationModel.find();
  return res.json({publications:database.publications});
 });
 
@@ -188,11 +207,13 @@ Access           PUBLIC
 Parameters       id
 Method           GET 
  */
-shapeAI.get("/p/:id",(req,res)=>{
-  const getSpecificPublication=database.publications.filter(
-    (publication)=>publication.id===parseInt(req.params.id)
-  );
-  if(getSpecificPublication.length===0){
+shapeAI.get("/p/:id",async(req,res)=>{
+
+  const getSpecificPublication = await PublicationModel.findOne({id:req.params.id});
+  // const getSpecificPublication=database.publications.filter(
+  //   (publication)=>publication.id===parseInt(req.params.id)
+  // );
+  if(!getSpecificPublication){
    return res.json({
      error :`No publication found with the id  of ${req.params.id}`
    });  
@@ -210,12 +231,14 @@ Parameters       isbn
 Method           GET 
  */
 
-shapeAI.get("/p/:isbn",(req,res)=>{
-  const getSpecificPublications=database.publications.filter(
-    (publication)=>publication.books.includes(req.params.isbn)
-  );
+shapeAI.get("/pub/:isbn",async(req,res)=>{
+
+  const   getSpecificPublications= await PublicationModel.findOne({books:req.params.isbn});
+  // const getSpecificPublications=database.publications.filter(
+  //   (publication)=>publication.books.includes(req.params.isbn)
+  // );
   
- if(getSpecificPublications.length===0){
+ if(!getSpecificPublications){
   return res.json({
     error :`No publication found for the isbn of ${req.params.isbn}`
   });
@@ -232,13 +255,16 @@ Parameters       NONE
 Method           POST
 
  */
-shapeAI.post("/book/new",(req,res)=>{
+shapeAI.post("/book/new", async (req,res)=>{
   //access body instead of parameter
   const {newBook} =req.body;  //directlycopying the object by destructuring
 
-  database.books.push(newBook);
+  const  addNewBook = BookModel.create(newBook);
 
-  return res.json({books:database.books, message:"book was added"});
+
+  // database.books.push(newBook);
+
+  return res.json({books:addNewBook , message:"book was added"});
 });
 
 
@@ -251,12 +277,13 @@ Parameters       NONE
 Method           POST
 
  */
-shapeAI.post("/author/new",(req,res)=>{
+shapeAI.post("/author/new",async (req,res)=>{
   const {newAuthor} =req.body;  //directlycopying the object by destructuring
 
-  database.authors.push(newAuthor);
+  const addNewAuthor = AuthorModel.create(newAuthor);
+  // database.authors.push(newAuthor);
 
-  return res.json({authors:database.authors, message:"author was added"});
+  return res.json({authors:addNewAuthor, message:"author was added"});
 });
 
 
@@ -268,12 +295,13 @@ Parameters       NONE
 Method           POST
 
  */
-shapeAI.post("/publication/new",(req,res)=>{
+shapeAI.post("/publication/new", async (req,res)=>{
   const {newPublication} =req.body;  //directlycopying the object by destructuring
 
-  database.publications.push(newPublication);
+  const addNewPublication = PublicationModel.create(newPublication);
+  // database.publications.push(newPublication);
 
-  return res.json({publications:database.publications, message:"publication was added"});
+  return res.json({publications:addNewPublication, message:"publication was added"});
 });
 
 
