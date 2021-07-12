@@ -102,6 +102,17 @@
 //     }
 // }
 
+//--------------------------------------------------------------
+    //MongoDB operators
 
-
-
+ //update operators
+     //=>$inc->increment  -to increment by 1 ->+1 , to decrement by 1->-1
+     //=>$min->minimum
+     //=>$max->maximum
+     //=>$seet->sets a data to an object property 
+     //$unset-> removes a property from an object
+  // for arrays
+     //$push
+     //$pop
+     //$pull->to extract a data from array->similar to filter
+    //$addToSet-> checks for duplicates and then push if it is not present 
