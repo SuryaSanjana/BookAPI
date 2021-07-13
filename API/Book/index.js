@@ -83,15 +83,19 @@ Parameters       NONE
 Method           POST
 */
 Router.post("/new", async (req,res)=>{
-    //access body instead of parameter
+    try{
+        //access body instead of parameter
     const {newBook} =req.body;  //directlycopying the object by destructuring
   
-    const  addNewBook = BookModel.create(newBook);
+    const  addNewBook = await BookModel.create(newBook);
   
   
     // database.books.push(newBook);
   
     return res.json({books:addNewBook , message:"book was added"});
+    }catch(error){
+        return res.json({error:error.message});
+    }
 });
 
 
